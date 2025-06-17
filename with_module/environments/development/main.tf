@@ -48,18 +48,34 @@ module "pip_be" {
 }
 
 module "vm_fe" {
-  depends_on                    = [module.subnet_fe, module.pip_fe]
-  source                        = "../../modules/VM"
-  nic_name                      = "fe-nic"
-  vm_name                       = "fe-vm"
-  resource_group_name           = "rg-todo-app-dev"
-  location                      = "Central India"
-  subnet_name                   = "fe-subnet"
-  pip_name                      = "fe-pip"
-  virtual_network_name          = "todo-vnet-dev"
-  key_vault_name                = "to-do-kv"
-  key_vault_resource_group_name = "kv-to-do"
-  secret_key_name               = "FE-VM-PASSWORD"
+  depends_on           = [module.subnet_fe, module.pip_fe, module.kv]
+  source               = "../../modules/VM"
+  nic_name             = "fe-nic"
+  vm_name              = "fe-vm"
+  resource_group_name  = "rg-todo-app-dev"
+  location             = "Central India"
+  subnet_name          = "fe-subnet"
+  pip_name             = "fe-pip"
+  virtual_network_name = "todo-vnet-dev"
+  key_vault_name       = "kv-todo-6060"
+  secret_key_name      = "FE-VM-PASSWORD"
 }
 
+module "kv" {
+  depends_on          = [module.rg]
+  source              = "../../modules/KV"
+  name                = "kv-todo-6060"
+  resource_group_name = "rg-todo-app-dev"
+  location            = "Central India"
+}
 
+module "db" {
+  depends_on          = [module.kv]
+  source              = "../../modules/DATABASE"
+  name                = "todo-db-server"
+  resource_group_name = "rg-todo-app-dev"
+  location            = "Central India"
+  key_vault_name      = "kv-todo-6060"
+  secret_key_name     = "TODO-DB-PASSWORD"
+  db_name             = "todo-db"
+}

@@ -1,22 +1,12 @@
-data "azurerm_subnet" "example" {
-  name                 = var.subnet_name
-  virtual_network_name = var.virtual_network_name
-  resource_group_name  = var.resource_group_name
+resource "random_password" "password" {
+  length           = 16
+  special          = true
+  override_special = "!#$%&*()-_=+[]{}<>:?"
 }
 
-data "azurerm_public_ip" "example" {
-  name                = var.pip_name
-  resource_group_name = var.resource_group_name
-}
-
-
-data "azurerm_key_vault" "example" {
-  name                = var.key_vault_name
-  resource_group_name = var.key_vault_resource_group_name
-}
-
-data "azurerm_key_vault_secret" "example" {
+resource "azurerm_key_vault_secret" "example" {
   name         = var.secret_key_name
+  value        = random_password.password.result
   key_vault_id = data.azurerm_key_vault.example.id
 }
 
@@ -42,7 +32,7 @@ resource "azurerm_linux_virtual_machine" "example" {
   network_interface_ids = [
     azurerm_network_interface.example.id,
   ]
-  admin_password                  = data.azurerm_key_vault_secret.example.value
+  admin_password                  = random_password.password.result
   disable_password_authentication = false
 
   os_disk {
